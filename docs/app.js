@@ -44,26 +44,26 @@
   }
 
   /* ---------- home: device state in localStorage ---------- */
-  const STORE_KEY = 'unica.home.v1';
+  const STORE_KEY = 'unica.home.v2'; // v2: office areas (v1 held the old home rooms)
   const DEFAULTS = () => ({
     lights: {
-      salon: { name: 'סלון', on: true, level: 70 },
-      kitchen: { name: 'מטבח', on: true, level: 100 },
-      office: { name: 'משרד', on: false, level: 80 },
-      bedroom: { name: 'חדר שינה', on: false, level: 40 },
-      garden: { name: 'גינה', on: false, level: 60 }
+      general: { name: 'תאורה כללית', on: true, level: 80 },
+      spotsMain: { name: 'ספוטים ראשי', on: true, level: 70 },
+      spotsSmall: { name: 'ספוטים קטנים', on: false, level: 50 }
     },
     climate: {
-      salon: { name: 'סלון', on: true, temp: 23, mode: 'cool' },
-      office: { name: 'משרד', on: false, temp: 24, mode: 'auto' },
-      bedroom: { name: 'חדר שינה', on: false, temp: 22, mode: 'cool' }
+      main: { name: 'אזור ראשי / מטבח', on: true, temp: 23, mode: 'cool' },
+      dev1: { name: 'משרד פיתוח 1', on: true, temp: 24, mode: 'auto' },
+      dev2: { name: 'משרד פיתוח 2', on: false, temp: 24, mode: 'auto' },
+      meeting: { name: 'חדר ישיבות', on: false, temp: 23, mode: 'cool' },
+      office3: { name: 'משרד 3', on: false, temp: 24, mode: 'auto' },
+      office4: { name: 'משרד 4', on: false, temp: 24, mode: 'auto' },
+      office5: { name: 'משרד 5', on: false, temp: 24, mode: 'auto' }
     },
     blinds: {
-      salon: { name: 'סלון', pos: 100 },
-      kitchen: { name: 'מטבח', pos: 60 },
-      office: { name: 'משרד', pos: 100 },
-      bedroom: { name: 'חדר שינה', pos: 0 },
-      garden: { name: 'גינה', pos: 100 }
+      dev: { name: 'משרד מפתחים', pos: 100 },
+      meeting: { name: 'חדר ישיבות', pos: 60 },
+      liron: { name: 'משרד לירון / זיו', pos: 100 }
     },
     security: { armed: false, doorLocked: true },
     energy: { now: 1.8, today: 12.4, solar: 3.2, cost: 9.6 }
@@ -260,7 +260,7 @@
     id: 'climate', page: 'climate', fill: true, size: 12, order: 1,
     render(el, h) {
       const zones = h.keys('climate');
-      el.innerHTML = head('snow', 'מיזוג') + `<div class="zones">${zones.map((z) => {
+      el.innerHTML = head('snow', 'מיזוג') + `<div class="zones${zones.length > 4 ? ' dense' : ''}">${zones.map((z) => {
         const d = h.get(`climate.${z}`);
         return `<div class="zone${d.on ? ' active' : ''}" data-zone="${z}">
           <div class="zone-top"><span class="row-name">${esc(d.name)}</span>${switchEl(d.on, `aria-label="${esc(d.name)}"`)}</div>
@@ -323,7 +323,7 @@
           </div>
         </div>
         <div class="cams">
-          ${['כניסה', 'גינה'].map((n) => `<div class="cam">${icon('cam')}<span>מצלמה – ${n}</span><em>מקום שמור</em></div>`).join('')}
+          ${['מצלמת כניסה', 'מצלמה איזור כללי'].map((n) => `<div class="cam">${icon('cam')}<span>${n}</span><em>מקום שמור</em></div>`).join('')}
         </div>`;
       el.querySelector('[data-alarm]').onclick = () => h.set('security.armed', !armed);
       el.querySelector('[data-door]').onclick = () => h.set('security.doorLocked', !locked);
@@ -360,23 +360,21 @@
   const SCENES = {
     arrive: { label: 'הגעה', icon: 'arrive', apply(h) {
       h.set('security.armed', false); h.set('security.doorLocked', true);
-      h.set('lights.salon.on', true); h.set('lights.salon.level', 80);
-      h.set('lights.kitchen.on', true); h.set('lights.kitchen.level', 100);
-      h.set('climate.salon.on', true); h.set('climate.salon.temp', 23);
-      h.set('blinds.salon.pos', 100);
+      h.set('lights.general.on', true); h.set('lights.general.level', 80);
+      h.set('lights.spotsMain.on', true); h.set('lights.spotsMain.level', 70);
+      h.set('climate.main.on', true); h.set('climate.main.temp', 23);
+      h.keys('blinds').forEach((r) => h.set(`blinds.${r}.pos`, 100));
     } },
     work: { label: 'עבודה', icon: 'work', apply(h) {
-      h.set('lights.office.on', true); h.set('lights.office.level', 90);
-      h.set('lights.salon.on', false);
-      h.set('climate.office.on', true); h.set('climate.office.temp', 24); h.set('climate.office.mode', 'auto');
-      h.set('blinds.office.pos', 70);
+      h.set('lights.general.on', true); h.set('lights.general.level', 90);
+      h.set('lights.spotsMain.on', true); h.set('lights.spotsSmall.on', false);
+      ['dev1', 'dev2'].forEach((z) => { h.set(`climate.${z}.on`, true); h.set(`climate.${z}.temp`, 24); h.set(`climate.${z}.mode`, 'auto'); });
+      h.set('blinds.dev.pos', 70); h.set('blinds.liron.pos', 70);
     } },
     night: { label: 'לילה', icon: 'moon', apply(h) {
-      h.keys('lights').forEach((r) => h.set(`lights.${r}.on`, r === 'bedroom'));
-      h.set('lights.bedroom.level', 15);
+      h.keys('lights').forEach((r) => h.set(`lights.${r}.on`, false));
+      h.keys('climate').forEach((z) => h.set(`climate.${z}.on`, false));
       h.keys('blinds').forEach((r) => h.set(`blinds.${r}.pos`, 0));
-      h.set('climate.salon.on', false); h.set('climate.office.on', false);
-      h.set('climate.bedroom.on', true); h.set('climate.bedroom.temp', 22);
       h.set('security.armed', true); h.set('security.doorLocked', true);
       if (window.unica && window.unica.radio) window.unica.radio.stop();
     } },

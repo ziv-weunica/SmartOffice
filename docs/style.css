@@ -222,3 +222,15 @@ input[type=range]{touch-action:pan-y}            /* sliders keep horizontal drag
 @keyframes tick{0%{transform:translateY(-35%);opacity:.2}100%{transform:none;opacity:1}}
 @media (max-width:760px){.r-clock{display:none}}
 @media (max-height:560px){.clk{padding:6px 12px}.clk-hm{font-size:1.8rem}.clk-sec span{font-size:1.5rem}}
+
+/* climate with many zones (7 office areas): compact tiles, 4 per row on tablet landscape */
+.zones.dense{grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:10px;align-content:start}
+.zones.dense .zone{padding:10px 12px;gap:8px;border-radius:16px}
+.zones.dense .row-name{font-size:.95rem}
+.zones.dense .switch{width:56px;height:32px}
+.zones.dense .switch span{width:24px;height:24px;top:4px}
+.zones.dense .switch.on span{inset-inline-start:28px}
+.zones.dense .round{width:44px;height:44px}
+.zones.dense .temp-val b{font-size:2.2rem}
+.zones.dense .modes{grid-template-columns:repeat(4,1fr);gap:5px}
+.zones.dense .chip{min-height:34px;padding:0 2px;font-size:.78rem}

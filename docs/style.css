@@ -214,14 +214,19 @@ input[type=range]{touch-action:pan-y}            /* sliders keep horizontal drag
 #clk-s{filter:drop-shadow(0 0 2px rgba(255,181,71,.7))}
 .hub{fill:var(--warm)}
 .clk-digital{display:flex;flex-direction:column;align-items:flex-start;line-height:1}
-.clk-hm{font-size:2.3rem;font-weight:300;font-variant-numeric:tabular-nums}
-.clk-sec{display:flex;align-items:baseline;gap:8px;margin-top:6px}
-.clk-sec span{font-size:1.9rem;font-weight:600;color:var(--warm);font-variant-numeric:tabular-nums;display:inline-block}
-.clk-sec small{color:var(--muted);font-size:.8rem}
-.clk-sec span.tick{animation:tick .45s ease-out}
-@keyframes tick{0%{transform:translateY(-35%);opacity:.2}100%{transform:none;opacity:1}}
+.clk-hm{display:flex;align-items:center;font-size:2.4rem;font-weight:300;font-variant-numeric:tabular-nums;height:1.1em;line-height:1.1}
+.roll{position:relative;display:inline-block;width:.62em;height:1.1em;overflow:hidden;text-align:center}
+.roll .d{position:absolute;inset:0;display:block;line-height:1.1}
+.roll .d.in{animation:rollIn .6s cubic-bezier(.3,.8,.3,1) both}
+.roll .d.out{animation:rollOut .6s cubic-bezier(.3,.8,.3,1) both}
+@keyframes rollIn{from{transform:translateY(-100%);opacity:.3}to{transform:none;opacity:1}}
+@keyframes rollOut{from{transform:none;opacity:1}to{transform:translateY(100%);opacity:0}}
+.colon{display:inline-block;width:.3em;text-align:center;margin-top:-.08em;animation:blink 2s steps(1) infinite}
+@keyframes blink{50%{opacity:.35}}
+.clk-day{margin-top:6px;font-size:1.5rem;font-weight:600;color:var(--warm)}
+.clk-date{margin-top:2px;font-size:1.05rem;color:var(--muted)}
 @media (max-width:760px){.r-clock{display:none}}
-@media (max-height:560px){.clk{padding:6px 12px}.clk-hm{font-size:1.8rem}.clk-sec span{font-size:1.5rem}}
+@media (max-height:560px){.clk{padding:6px 12px}.clk-hm{font-size:1.9rem}.clk-day{font-size:1.2rem;margin-top:3px}.clk-date{font-size:.9rem}}
 
 /* climate with many zones (7 office areas): compact tiles, 4 per row on tablet landscape */
 .zones.dense{grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:10px;align-content:start}

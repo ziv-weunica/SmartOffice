@@ -24,14 +24,35 @@
           <g id="clk-s"><line x1="50" y1="58" x2="50" y2="14" class="hand sec"/><circle cx="50" cy="14" r="2.2" class="sec-dot"/></g>
           <circle cx="50" cy="50" r="3" class="hub"/>
         </svg>
-        <div class="clk-digital" dir="ltr">
-          <div class="clk-hm" id="clk-hm">--:--</div>
-          <div class="clk-sec"><span id="clk-ss">00</span><small>שניות</small></div>
+        <div class="clk-digital">
+          <div class="clk-hm" dir="ltr" aria-label="שעה"><span class="roll" data-i="0"></span><span class="roll" data-i="1"></span><span class="colon">:</span><span class="roll" data-i="2"></span><span class="roll" data-i="3"></span></div>
+          <div class="clk-day" id="clk-day"></div>
+          <div class="clk-date" id="clk-date"></div>
         </div>
       </div>`;
     const $ = (s) => el.querySelector(s);
-    const h = $('#clk-h'), m = $('#clk-m'), s = $('#clk-s'), ring = $('#clk-ring'), hm = $('#clk-hm'), ss = $('#clk-ss');
-    let raf = 0, lastSec = -1;
+    const h = $('#clk-h'), m = $('#clk-m'), s = $('#clk-s'), ring = $('#clk-ring');
+    const rolls = [...el.querySelectorAll('.roll')], dayEl = $('#clk-day'), dateEl = $('#clk-date');
+    let raf = 0, lastMin = -1;
+
+    /* a digit slot: the new digit drops in from above, pushing the old one down and out */
+    function setDigit(slot, ch, animate) {
+      const cur = slot.querySelector('.d:last-child');
+      if (cur && cur.textContent === ch) return;
+      const n = document.createElement('span');
+      n.className = 'd'; n.textContent = ch;
+      slot.appendChild(n);
+      if (!cur) return;
+      if (!animate || reduce) { cur.remove(); return; }
+      n.classList.add('in'); cur.classList.add('out');
+      setTimeout(() => cur.remove(), 650);
+    }
+    function setTime(d, animate) {
+      const t = String(d.getHours()).padStart(2, '0') + String(d.getMinutes()).padStart(2, '0');
+      rolls.forEach((r, i) => setDigit(r, t[i], animate));
+      dayEl.textContent = d.toLocaleDateString('he-IL', { weekday: 'long' });
+      dateEl.textContent = d.toLocaleDateString('he-IL', { day: 'numeric', month: 'long' });
+    }
 
     function frame() {
       const d = new Date();
@@ -41,11 +62,9 @@
       m.setAttribute('transform', `rotate(${min * 6} 50 50)`);
       h.setAttribute('transform', `rotate(${hr * 30} 50 50)`);
       ring.setAttribute('stroke-dashoffset', String(C * (1 - sec / 60)));
-      if (d.getSeconds() !== lastSec) {                       // once per second
-        lastSec = d.getSeconds();
-        ss.textContent = String(lastSec).padStart(2, '0');
-        hm.textContent = d.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit', hour12: false });
-        ss.classList.remove('tick'); void ss.offsetWidth; ss.classList.add('tick');
+      if (d.getMinutes() !== lastMin) {                       // once per minute
+        setTime(d, lastMin !== -1);
+        lastMin = d.getMinutes();
       }
       raf = reduce ? setTimeout(frame, 1000) : requestAnimationFrame(frame);
     }

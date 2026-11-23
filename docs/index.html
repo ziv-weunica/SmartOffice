@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#0b0f14">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Unica Home</title>
+<link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="splash" aria-hidden="true"><img src="assets/logo.svg" alt=""></div>
+
+<header class="topbar">
+  <div class="brand"><img src="assets/logo.svg" alt="Unica"><span class="brand-sub">Home</span></div>
+  <nav class="scenes" id="scenes" aria-label="סצנות מהירות"></nav>
+  <div class="clock" aria-live="off">
+    <div class="clock-time" id="clock-time">--:--</div>
+    <div class="clock-date" id="clock-date"></div>
+  </div>
+</header>
+
+<main class="grid" id="grid"></main>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<!-- app.js must load before radio.js; boot runs on DOMContentLoaded -->
+<script src="app.js"></script>
+<script src="radio.js"></script>
+</body>
+</html>

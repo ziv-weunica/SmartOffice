@@ -438,4 +438,9 @@
     if (sp) { setTimeout(() => sp.classList.add('hide'), 700); setTimeout(() => sp.remove(), 1300); }
   }
   document.addEventListener('DOMContentLoaded', boot);
+
+  /* PWA: offline app shell. Skipped inside the Capacitor APK (assets are already local). */
+  if ('serviceWorker' in navigator && !(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform())) {
+    window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => { /* needs https or localhost */ }));
+  }
 })();

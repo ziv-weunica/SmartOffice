@@ -194,6 +194,7 @@
               </div>
               <div class="vol"><span>🔈</span><input type="range" id="r-vol" min="0" max="1" step="0.05" class="slider" aria-label="עוצמה"><span>🔊</span></div>
             </div>
+            <div class="r-clock" id="r-clock"></div>
           </div>
           <div class="r-right">
             <div class="search"><input type="search" id="r-q" placeholder="חיפוש תחנה…" aria-label="חיפוש תחנה"></div>
@@ -203,6 +204,7 @@
         </div>`;
 
       const $q = (s) => el.querySelector(s);
+      if (window.unica.mountClock) window.unica.mountClock($q('#r-clock'));
       const vol = $q('#r-vol'); vol.value = audio.volume;
       vol.oninput = () => setVolume(+vol.value);
       $q('#r-play').onclick = () => { if (!P.st) return toast('בחר תחנה'); toggle(); };

@@ -172,29 +172,35 @@
   let paintList = () => {};
 
   window.Widgets.register({
-    id: 'radio', size: 7, order: 5,
+    id: 'radio', page: 'media', fill: true, size: 12, order: 1,
     render(el) {
       if (el.dataset.ready) return; // never re-rendered: keeps the music uninterrupted
       el.dataset.ready = '1';
       el.classList.add('radio');
       el.innerHTML = `
-        <div class="card-head"><div class="card-title">${icon('radio')}<h2>מדיה · רדיו</h2></div>
-          <div class="search"><input type="search" id="r-q" placeholder="חיפוש תחנה…" aria-label="חיפוש תחנה"></div></div>
-        <div class="now">
-          <div class="art" id="r-art"><span>📻</span></div>
-          <div class="now-info">
-            <div class="now-name" id="r-name">בחר תחנה</div>
-            <div class="now-sub" id="r-sub"></div>
-            <div class="eq" id="r-eq" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="radio-body">
+          <div class="r-left">
+            <div class="card-head"><div class="card-title">${icon('radio')}<h2>מדיה · רדיו</h2></div></div>
+            <div class="now">
+              <div class="art" id="r-art"><span>📻</span></div>
+              <div class="now-info">
+                <div class="now-name" id="r-name">בחר תחנה</div>
+                <div class="now-sub" id="r-sub"></div>
+                <div class="eq" id="r-eq" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+              </div>
+              <div class="ctrls">
+                <button class="round big play" id="r-play" aria-label="נגן / השהה"></button>
+                <button class="chip sleep" id="r-sleep" aria-label="טיימר שינה">😴 <span id="r-sleep-l">כבוי</span></button>
+              </div>
+              <div class="vol"><span>🔈</span><input type="range" id="r-vol" min="0" max="1" step="0.05" class="slider" aria-label="עוצמה"><span>🔊</span></div>
+            </div>
           </div>
-          <div class="ctrls">
-            <button class="round big play" id="r-play" aria-label="נגן / השהה"></button>
-            <button class="chip sleep" id="r-sleep" aria-label="טיימר שינה">😴 <span id="r-sleep-l">כבוי</span></button>
+          <div class="r-right">
+            <div class="search"><input type="search" id="r-q" placeholder="חיפוש תחנה…" aria-label="חיפוש תחנה"></div>
+            <div class="tabs" id="r-tabs" role="tablist">${TABS.map((t) => `<button class="tab" role="tab" data-tab="${t.id}">${t.label}</button>`).join('')}</div>
+            <div class="stations" id="r-list"></div>
           </div>
-          <div class="vol"><span>🔈</span><input type="range" id="r-vol" min="0" max="1" step="0.05" class="slider" aria-label="עוצמה"><span>🔊</span></div>
-        </div>
-        <div class="tabs" id="r-tabs" role="tablist">${TABS.map((t) => `<button class="tab" role="tab" data-tab="${t.id}">${t.label}</button>`).join('')}</div>
-        <div class="stations" id="r-list"></div>`;
+        </div>`;
 
       const $q = (s) => el.querySelector(s);
       const vol = $q('#r-vol'); vol.value = audio.volume;

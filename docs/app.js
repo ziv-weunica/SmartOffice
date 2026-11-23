@@ -109,27 +109,100 @@
     return api;
   })();
 
-  /* ---------- widget registry ---------- */
+  /* ---------- pages (swipe pager) + widget registry ---------- */
+  const PAGES = [
+    { id: 'media', label: 'מדיה', icon: 'radio' },
+    { id: 'lights', label: 'תאורה', icon: 'bulb' },
+    { id: 'climate', label: 'מיזוג', icon: 'snow' },
+    { id: 'blinds', label: 'תריסים', icon: 'blinds' },
+    { id: 'security', label: 'אבטחה', icon: 'shield' },
+    { id: 'energy', label: 'אנרגיה', icon: 'bolt' }
+  ];
+  const LAST_PAGE_KEY = 'unica.page.v1';
+
+  const Pager = (() => {
+    let raf = 0, active = null;
+    const pager = () => $('#pager');
+    const pageEl = (id) => $(`.page[data-page="${id}"]`, pager());
+    function ensure(id, label, ico) {
+      let el = pageEl(id);
+      if (el) return el;
+      if (!PAGES.some((p) => p.id === id)) PAGES.push({ id, label: label || id, icon: ico || 'sparkle' });
+      el = document.createElement('section');
+      el.className = 'page'; el.dataset.page = id;
+      el.innerHTML = '<div class="page-grid"></div>';
+      pager().appendChild(el);
+      drawTabs();
+      return el;
+    }
+    function drawTabs() {
+      const nav = $('#tabs');
+      nav.innerHTML = PAGES.map((p) =>
+        `<button class="tabbtn" role="tab" data-page="${p.id}" aria-selected="false">${icon(p.icon)}<span>${p.label}</span></button>`).join('');
+      mark();
+    }
+    const index = () => Math.round(Math.abs(pager().scrollLeft) / (pager().clientWidth || 1));
+    function mark() {
+      const pages = [...pager().querySelectorAll('.page')];
+      const cur = pages[Math.min(index(), pages.length - 1)];
+      const id = cur ? cur.dataset.page : null;
+      document.querySelectorAll('.tabbtn').forEach((b) => {
+        const on = b.dataset.page === id;
+        b.classList.toggle('on', on); b.setAttribute('aria-selected', on);
+        if (on) b.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+      });
+      if (id && id !== active) { active = id; try { localStorage.setItem(LAST_PAGE_KEY, id); } catch (e) { /* ignore */ } }
+    }
+    function goto(id, instant) {
+      const el = pageEl(id);
+      if (el) el.scrollIntoView({ behavior: instant ? 'auto' : 'smooth', inline: 'start', block: 'nearest' });
+    }
+    function step(d) {                       // d = +1 next page (swipe left in RTL), -1 previous
+      const pages = [...pager().querySelectorAll('.page')];
+      const i = Math.max(0, Math.min(pages.length - 1, index() + d));
+      goto(pages[i].dataset.page);
+    }
+    function init() {
+      PAGES.forEach((p) => ensure(p.id));
+      drawTabs();
+      $('#tabs').onclick = (e) => { const b = e.target.closest('.tabbtn'); if (b) goto(b.dataset.page); };
+      pager().addEventListener('scroll', () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(mark); }, { passive: true });
+      window.addEventListener('resize', () => { if (active) goto(active, true); });
+      document.addEventListener('keydown', (e) => {
+        if (e.target.matches('input,textarea')) return;
+        if (e.key === 'ArrowLeft') step(1); else if (e.key === 'ArrowRight') step(-1);
+      });
+      mark();
+    }
+    function restore() {
+      let last = null; try { last = localStorage.getItem(LAST_PAGE_KEY); } catch (e) { /* ignore */ }
+      if (last) goto(last, true);
+      mark();
+    }
+    return { init, restore, ensure, goto, step, get current() { return active; } };
+  })();
+
   const Widgets = (() => {
     const list = new Map();
     return {
       list,
+      /* page: id of the pager page this widget lives on (default 'more'); fill: stretch to page height */
       register(w) {
         if (!w || !w.id || typeof w.render !== 'function') throw new Error('Widgets.register: id and render() required');
-        list.set(w.id, Object.assign({ size: 12, order: 100 }, w));
+        list.set(w.id, Object.assign({ size: 12, order: 100, page: 'more' }, w));
         if (Widgets.mounted) Widgets.mount(list.get(w.id)); // late registration
       },
       mounted: false,
       mount(w) {
-        const grid = $('#grid');
+        const page = Pager.ensure(w.page, w.pageLabel, w.pageIcon);
+        const grid = $('.page-grid', page);
         let el = $(`[data-widget="${w.id}"]`, grid);
         if (!el) {
           el = document.createElement('section');
-          el.className = 'card widget';
+          el.className = 'card widget' + (w.fill ? ' fill' : '');
           el.dataset.widget = w.id;
           grid.appendChild(el);
         }
-        el.style.setProperty('--span', w.size);
         el.style.order = w.order;
         w.render(el, home);
       },
@@ -159,7 +232,7 @@
 
   /* ---------- lights ---------- */
   Widgets.register({
-    id: 'lights', size: 5, order: 6,
+    id: 'lights', page: 'lights', fill: true, size: 12, order: 1,
     render(el, h) {
       const rooms = h.keys('lights');
       const anyOn = rooms.some((r) => h.get(`lights.${r}.on`));
@@ -184,7 +257,7 @@
   /* ---------- climate ---------- */
   const MODES = { cool: 'קירור', heat: 'חימום', fan: 'מאוורר', auto: 'אוטו' };
   Widgets.register({
-    id: 'climate', size: 7, order: 10,
+    id: 'climate', page: 'climate', fill: true, size: 12, order: 1,
     render(el, h) {
       const zones = h.keys('climate');
       el.innerHTML = head('snow', 'מיזוג') + `<div class="zones">${zones.map((z) => {
@@ -212,7 +285,7 @@
 
   /* ---------- blinds ---------- */
   Widgets.register({
-    id: 'blinds', size: 5, order: 30,
+    id: 'blinds', page: 'blinds', fill: true, size: 12, order: 1,
     render(el, h) {
       const rooms = h.keys('blinds');
       el.innerHTML = head('blinds', 'תריסים', `<div class="btn-group"><button class="btn ghost" data-all="100">פתח הכל</button><button class="btn ghost" data-all="0">סגור הכל</button></div>`) +
@@ -235,7 +308,7 @@
 
   /* ---------- security ---------- */
   Widgets.register({
-    id: 'security', size: 6, order: 40,
+    id: 'security', page: 'security', fill: true, size: 12, order: 1,
     render(el, h) {
       const armed = h.get('security.armed'), locked = h.get('security.doorLocked');
       el.innerHTML = head('shield', 'אבטחה') + `
@@ -259,7 +332,7 @@
 
   /* ---------- energy (demo data) ---------- */
   Widgets.register({
-    id: 'energy', size: 6, order: 50,
+    id: 'energy', page: 'energy', size: 12, order: 1,
     render(el, h) {
       const e = h.get('energy');
       const bars = [0.35, 0.3, 0.28, 0.32, 0.5, 0.7, 0.62, 0.55, 0.8, 0.95, 0.7, 0.6];
@@ -276,7 +349,7 @@
 
   /* ---------- placeholder ---------- */
   Widgets.register({
-    id: 'placeholder', size: 12, order: 999,
+    id: 'placeholder', page: 'energy', size: 12, order: 999,
     render(el) {
       el.classList.add('placeholder');
       el.innerHTML = `${icon('sparkle')}<span>כאן יתווספו יכולות חדשות</span>`;
@@ -342,7 +415,7 @@
   /* ---------- public API ---------- */
   window.Widgets = Widgets;
   window.unica = Object.assign(window.unica || {}, {
-    home, Widgets, icon, esc, toast,
+    home, Widgets, Pager, icon, esc, toast,
     scene: applyScene,
     lights: {
       all(on) { home.batch(() => home.keys('lights').forEach((r) => home.set(`lights.${r}.on`, !!on))); },
@@ -357,8 +430,10 @@
   function boot() {
     renderScenes();
     tickClock(); setInterval(tickClock, 1000);
+    Pager.init();
     Widgets.list.forEach((w) => Widgets.mount(w));
     Widgets.mounted = true;
+    Pager.restore();
     const sp = $('#splash');
     if (sp) { setTimeout(() => sp.classList.add('hide'), 700); setTimeout(() => sp.remove(), 1300); }
   }

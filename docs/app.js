@@ -138,7 +138,9 @@
     function drawTabs() {
       const nav = $('#tabs');
       nav.innerHTML = PAGES.map((p) =>
-        `<button class="tabbtn" role="tab" data-page="${p.id}" aria-selected="false">${icon(p.icon)}<span>${p.label}</span></button>`).join('');
+        `<button class="tabbtn" role="tab" data-page="${p.id}" aria-selected="false">${icon(p.icon)}<span>${p.label}</span></button>`).join('') +
+        `<button class="theme-toggle" role="switch" aria-checked="false" aria-label="מצב בהיר / כהה">${icon('moon', 'moon')}${icon('sun', 'sun')}</button>`;
+      Theme.set(Theme.get());                 // sync toggle state with the saved theme
       mark();
     }
     const index = () => Math.round(Math.abs(pager().scrollLeft) / (pager().clientWidth || 1));
@@ -165,7 +167,10 @@
     function init() {
       PAGES.forEach((p) => ensure(p.id));
       drawTabs();
-      $('#tabs').onclick = (e) => { const b = e.target.closest('.tabbtn'); if (b) goto(b.dataset.page); };
+      $('#tabs').onclick = (e) => {
+        if (e.target.closest('.theme-toggle')) return Theme.toggle();
+        const b = e.target.closest('.tabbtn'); if (b) goto(b.dataset.page);
+      };
       pager().addEventListener('scroll', () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(mark); }, { passive: true });
       window.addEventListener('resize', () => { if (active) goto(active, true); });
       document.addEventListener('keydown', (e) => {
@@ -414,12 +419,7 @@
     const nav = $('#scenes');
     nav.innerHTML = Object.entries(SCENES).map(([id, s]) =>
       `<button class="scene" data-scene="${id}">${icon(s.icon)}<span>${s.label}</span></button>`).join('');
-    nav.insertAdjacentHTML('beforeend', `<button class="theme-toggle" role="switch" aria-checked="false" aria-label="מצב בהיר / כהה">${icon('moon', 'moon')}${icon('sun', 'sun')}</button>`);
-    nav.onclick = (e) => {
-      if (e.target.closest('.theme-toggle')) return Theme.toggle();
-      const b = e.target.closest('.scene'); if (b) applyScene(b.dataset.scene);
-    };
-    Theme.set(Theme.get());                       // sync toggle state / meta tag with the saved theme
+    nav.onclick = (e) => { const b = e.target.closest('.scene'); if (b) applyScene(b.dataset.scene); };
   }
 
   /* ---------- clock ---------- */

@@ -5,19 +5,19 @@
   --bg:#0b0f14; --card:#141b24; --card-2:#1a2330; --line:#243040;
   --accent:#38b6ff; --accent-dim:rgba(56,182,255,.16); --warm:#ffb547; --warm-dim:rgba(255,181,71,.16);
   --text:#eaf1f8; --muted:#8a9bb0; --radius:22px; --gap:12px;
-  --tap:56px;
+  --tap:56px; --panel:var(--card);
   --on-accent:#04121c; --track:#2a3544; --knob:#ffffff; --tick:#4a5a70; --clk-track:#222d3b;
   --card-border:rgba(255,255,255,.04); --shadow:0 10px 30px -18px #000; --glow:rgba(56,182,255,.10);
   --radio-grad:linear-gradient(160deg,#16212e,var(--card) 55%); color-scheme:dark;
 }
 /* Light mode: soft grey-green surfaces, never pure white */
 :root[data-theme="light"]{
-  --bg:#ffffff; --card:#f2f7f3; --card-2:#e5eee7; --line:#d0ddd4;
+  --bg:#e9f1eb; --card:#f2f7f3; --panel:#ffffff; --card-2:#e5eee7; --line:#d0ddd4;
   --accent:#0b86c9; --accent-dim:rgba(11,134,201,.14); --warm:#c46c00; --warm-dim:rgba(196,108,0,.15);
   --text:#18271f; --muted:#56695e;
   --on-accent:#f3faf5; --track:#c3d2c8; --knob:#f8fbf8; --tick:#a9bbaf; --clk-track:#d0dcd3;
-  --card-border:rgba(24,60,40,.09); --shadow:0 10px 26px -18px rgba(32,60,44,.45); --glow:rgba(90,170,125,.06);
-  --radio-grad:linear-gradient(160deg,#e8f1ea,var(--card) 55%); color-scheme:light;
+  --card-border:rgba(24,60,40,.09); --shadow:0 10px 26px -18px rgba(32,60,44,.45); --glow:rgba(90,170,125,.12);
+  --radio-grad:#ffffff; color-scheme:light;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;min-height:100%}
@@ -73,7 +73,7 @@ input[type=range]{touch-action:pan-y}            /* sliders keep horizontal drag
 .tabbtn.on{color:var(--accent);background:var(--accent-dim)}
 .tabbtn.on::after{content:"";position:absolute;bottom:3px;width:22px;height:3px;border-radius:3px;background:var(--accent)}
 
-.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:16px 18px;
+.card{background:var(--panel);border:1px solid var(--card-border);border-radius:var(--radius);padding:16px 18px;
   box-shadow:var(--shadow);min-width:0}
 .card.fill{flex:1;min-height:0;display:flex;flex-direction:column}
 .card.fill>.rows{grid-auto-rows:minmax(64px,104px);align-content:start}

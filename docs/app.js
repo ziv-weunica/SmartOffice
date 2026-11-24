@@ -437,6 +437,18 @@
   }
   document.addEventListener('DOMContentLoaded', boot);
 
+  /* Keep the display awake while the page is visible (PWA / browser). The Android app also sets FLAG_KEEP_SCREEN_ON natively. */
+  (function keepAwake() {
+    if (!('wakeLock' in navigator)) return;
+    let lock = null;
+    const acquire = async () => {
+      try { lock = await navigator.wakeLock.request('screen'); lock.addEventListener('release', () => { lock = null; }); } catch (e) { /* denied: battery saver or no user gesture yet */ }
+    };
+    document.addEventListener('visibilitychange', () => { if (!document.hidden && !lock) acquire(); });
+    document.addEventListener('pointerdown', () => { if (!lock) acquire(); }, { passive: true });
+    acquire();
+  })();
+
   /* PWA: offline app shell. Skipped inside the Capacitor APK (assets are already local). */
   if ('serviceWorker' in navigator && !(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform())) {
     window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => { /* needs https or localhost */ }));

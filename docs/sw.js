@@ -1,7 +1,7 @@
 /* Unica Smart Office service worker: app shell works offline; updates are picked up when online.
    Radio API / streams / station logos are never cached (cross-origin passes straight through). */
-const CACHE = 'unica-home-v14';
-const SHELL = ['./', 'index.html', 'style.css?v=14', 'app.js?v=14', 'clock.js?v=14', 'radio.js?v=14', 'manifest.webmanifest',
+const CACHE = 'unica-home-v15';
+const SHELL = ['./', 'index.html', 'style.css?v=15', 'app.js?v=15', 'clock.js?v=15', 'radio.js?v=15', 'manifest.webmanifest',
   'assets/logo.svg', 'assets/logo-light.svg', 'assets/fonts/heebo-hebrew-wght-normal.woff2', 'assets/fonts/heebo-latin-wght-normal.woff2',
   'assets/icon-192.png', 'assets/icon-512.png'];
 

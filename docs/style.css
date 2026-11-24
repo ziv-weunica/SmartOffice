@@ -12,11 +12,11 @@
 }
 /* Light mode: soft grey-green surfaces, never pure white */
 :root[data-theme="light"]{
-  --bg:#e9f1eb; --card:#f2f7f3; --card-2:#e5eee7; --line:#d0ddd4;
+  --bg:#ffffff; --card:#f2f7f3; --card-2:#e5eee7; --line:#d0ddd4;
   --accent:#0b86c9; --accent-dim:rgba(11,134,201,.14); --warm:#c46c00; --warm-dim:rgba(196,108,0,.15);
   --text:#18271f; --muted:#56695e;
   --on-accent:#f3faf5; --track:#c3d2c8; --knob:#f8fbf8; --tick:#a9bbaf; --clk-track:#d0dcd3;
-  --card-border:rgba(24,60,40,.09); --shadow:0 10px 26px -18px rgba(32,60,44,.45); --glow:rgba(90,170,125,.12);
+  --card-border:rgba(24,60,40,.09); --shadow:0 10px 26px -18px rgba(32,60,44,.45); --glow:rgba(90,170,125,.06);
   --radio-grad:linear-gradient(160deg,#e8f1ea,var(--card) 55%); color-scheme:light;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}

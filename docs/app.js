@@ -404,7 +404,7 @@
       t = t === 'light' ? 'light' : 'dark';
       if (t === 'light') document.documentElement.dataset.theme = 'light'; else delete document.documentElement.dataset.theme;
       try { localStorage.setItem(THEME_KEY, t); } catch (e) { /* ignore */ }
-      const m = $('#meta-theme'); if (m) m.setAttribute('content', t === 'light' ? '#e9f1eb' : '#0b0f14');
+      const m = $('#meta-theme'); if (m) m.setAttribute('content', t === 'light' ? '#ffffff' : '#0b0f14');
       const b = $('.theme-toggle'); if (b) { b.setAttribute('aria-checked', t === 'light'); b.setAttribute('title', t === 'light' ? 'מצב כהה' : 'מצב בהיר'); }
     },
     toggle() { Theme.set(Theme.get() === 'light' ? 'dark' : 'light'); }

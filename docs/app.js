@@ -396,11 +396,30 @@
     return true;
   }
 
+  /* ---------- theme (dark / light) ---------- */
+  const THEME_KEY = 'unica.theme.v1';
+  const Theme = {
+    get() { return document.documentElement.dataset.theme === 'light' ? 'light' : 'dark'; },
+    set(t) {
+      t = t === 'light' ? 'light' : 'dark';
+      if (t === 'light') document.documentElement.dataset.theme = 'light'; else delete document.documentElement.dataset.theme;
+      try { localStorage.setItem(THEME_KEY, t); } catch (e) { /* ignore */ }
+      const m = $('#meta-theme'); if (m) m.setAttribute('content', t === 'light' ? '#dce6df' : '#0b0f14');
+      const b = $('.theme-toggle'); if (b) { b.setAttribute('aria-checked', t === 'light'); b.setAttribute('title', t === 'light' ? 'מצב כהה' : 'מצב בהיר'); }
+    },
+    toggle() { Theme.set(Theme.get() === 'light' ? 'dark' : 'light'); }
+  };
+
   function renderScenes() {
     const nav = $('#scenes');
     nav.innerHTML = Object.entries(SCENES).map(([id, s]) =>
       `<button class="scene" data-scene="${id}">${icon(s.icon)}<span>${s.label}</span></button>`).join('');
-    nav.onclick = (e) => { const b = e.target.closest('.scene'); if (b) applyScene(b.dataset.scene); };
+    nav.insertAdjacentHTML('beforeend', `<button class="theme-toggle" role="switch" aria-checked="false" aria-label="מצב בהיר / כהה">${icon('moon', 'moon')}${icon('sun', 'sun')}</button>`);
+    nav.onclick = (e) => {
+      if (e.target.closest('.theme-toggle')) return Theme.toggle();
+      const b = e.target.closest('.scene'); if (b) applyScene(b.dataset.scene);
+    };
+    Theme.set(Theme.get());                       // sync toggle state / meta tag with the saved theme
   }
 
   /* ---------- clock ---------- */
@@ -413,7 +432,7 @@
   /* ---------- public API ---------- */
   window.Widgets = Widgets;
   window.unica = Object.assign(window.unica || {}, {
-    home, Widgets, Pager, icon, esc, toast,
+    home, Widgets, Pager, Theme, icon, esc, toast,
     scene: applyScene,
     lights: {
       all(on) { home.batch(() => home.keys('lights').forEach((r) => home.set(`lights.${r}.on`, !!on))); },

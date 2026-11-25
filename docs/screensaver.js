@@ -141,9 +141,10 @@
   const bump = () => { lastActivity = Date.now(); };
   ['pointermove', 'touchstart', 'keydown', 'wheel'].forEach((ev) => document.addEventListener(ev, () => { if (!active) bump(); }, { capture: true, passive: true }));
   document.addEventListener('pointerdown', (e) => {
+    if (window.__SS_DEMO) return;                       // demo page: runs until closed
     if (active) { e.preventDefault(); e.stopPropagation(); stop(); } else bump();
   }, { capture: true });
-  document.addEventListener('keydown', () => { if (active) stop(); }, true);
+  document.addEventListener('keydown', () => { if (active && !window.__SS_DEMO) stop(); }, true);
   document.addEventListener('visibilitychange', () => { if (document.hidden) stop(); else bump(); });
   setInterval(() => {
     if (cfg.enabled && !active && Date.now() - lastActivity >= cfg.minutes * 60000) start();

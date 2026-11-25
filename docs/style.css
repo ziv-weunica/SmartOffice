@@ -266,3 +266,10 @@ input[type=range]{touch-action:pan-y}            /* sliders keep horizontal drag
 .theme-seg[data-mode="light"]::before{transform:translateX(calc(-2 * var(--sw)))}
 .theme-seg button[aria-checked="true"]{color:var(--accent)}
 @media (max-width:760px){.tabbtn{min-width:56px}.theme-seg{--sw:30px;margin-inline-start:4px}.theme-seg button,.theme-seg::before{height:30px}.theme-seg .ico{width:17px;height:17px}}
+
+/* screensaver: always black, regardless of theme */
+#screensaver{position:fixed;inset:0;z-index:200;background:#000;opacity:0;transition:opacity .7s ease;touch-action:none;cursor:none}
+#screensaver.on{opacity:1}
+#screensaver:not(.on){transition-duration:.3s}
+#screensaver .ss-logo{position:absolute}
+#screensaver svg{display:block;width:100%;height:100%;overflow:visible}

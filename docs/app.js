@@ -29,6 +29,7 @@
     plug: '<path d="M9 2v5M15 2v5M6 7h12v4a6 6 0 0 1-12 0zM12 17v5"/>',
     sparkle: '<path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M18 6l-2.5 2.5M8.5 15.5 6 18"/>',
     radio: '<rect x="3" y="8" width="18" height="12" rx="2"/><circle cx="16" cy="14" r="2.5"/><path d="M7 12h4M7 15h4M5 8l13-5"/>',
+    clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/>',
     sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5 19 19M19 5l-1.5 1.5M6.5 17.5 5 19"/>'
   };
   const icon = (n, cls = '') => `<svg class="ico ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n] || ''}</svg>`;
@@ -139,8 +140,11 @@
       const nav = $('#tabs');
       nav.innerHTML = PAGES.map((p) =>
         `<button class="tabbtn" role="tab" data-page="${p.id}" aria-selected="false">${icon(p.icon)}<span>${p.label}</span></button>`).join('') +
-        `<button class="theme-toggle" role="switch" aria-checked="false" aria-label="מצב בהיר / כהה">${icon('moon', 'moon')}${icon('sun', 'sun')}</button>`;
-      Theme.set(Theme.get());                 // sync toggle state with the saved theme
+        `<div class="theme-seg" role="radiogroup" aria-label="תצוגה" data-mode="dark">` +
+        [['dark', 'moon', 'מצב כהה'], ['auto', 'clock', 'אוטומטי לפי שעה'], ['light', 'sun', 'מצב בהיר']]
+          .map(([m, ic, t]) => `<button role="radio" aria-checked="false" data-mode="${m}" title="${t}" aria-label="${t}">${icon(ic)}</button>`).join('') +
+        `</div>`;
+      Theme.apply();                          // sync the selector with the saved mode
       mark();
     }
     const index = () => Math.round(Math.abs(pager().scrollLeft) / (pager().clientWidth || 1));
@@ -168,7 +172,7 @@
       PAGES.forEach((p) => ensure(p.id));
       drawTabs();
       $('#tabs').onclick = (e) => {
-        if (e.target.closest('.theme-toggle')) return Theme.toggle();
+        const tm = e.target.closest('.theme-seg [data-mode]'); if (tm) return Theme.setMode(tm.dataset.mode);
         const b = e.target.closest('.tabbtn'); if (b) goto(b.dataset.page);
       };
       pager().addEventListener('scroll', () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(mark); }, { passive: true });
@@ -401,19 +405,41 @@
     return true;
   }
 
-  /* ---------- theme (dark / light) ---------- */
-  const THEME_KEY = 'unica.theme.v1';
+  /* ---------- theme: dark / light / auto (by time of day) ---------- */
+  const THEME_KEY = 'unica.theme.v1';                 // saved mode: 'dark' | 'light' | 'auto'
+  const LIGHT_FROM = 7, LIGHT_TO = 17;                // auto: light from 07:00 until 17:00, dark otherwise
+  const MODE_LABEL = { dark: 'כהה', auto: 'אוטומטי', light: 'בהיר' };
   const Theme = {
-    get() { return document.documentElement.dataset.theme === 'light' ? 'light' : 'dark'; },
-    set(t) {
-      t = t === 'light' ? 'light' : 'dark';
-      if (t === 'light') document.documentElement.dataset.theme = 'light'; else delete document.documentElement.dataset.theme;
-      try { localStorage.setItem(THEME_KEY, t); } catch (e) { /* ignore */ }
-      const m = $('#meta-theme'); if (m) m.setAttribute('content', t === 'light' ? '#e9f1eb' : '#0b0f14');
-      const b = $('.theme-toggle'); if (b) { b.setAttribute('aria-checked', t === 'light'); b.setAttribute('title', t === 'light' ? 'מצב כהה' : 'מצב בהיר'); }
+    mode() {
+      let m = null; try { m = localStorage.getItem(THEME_KEY); } catch (e) { /* ignore */ }
+      return m === 'light' || m === 'auto' ? m : 'dark';
     },
-    toggle() { Theme.set(Theme.get() === 'light' ? 'dark' : 'light'); }
+    /* the look actually shown right now */
+    get() {
+      const m = Theme.mode();
+      if (m === 'auto') { const h = new Date().getHours(); return h >= LIGHT_FROM && h < LIGHT_TO ? 'light' : 'dark'; }
+      return m;
+    },
+    apply() {
+      const t = Theme.get(), mode = Theme.mode();
+      if (t === 'light') document.documentElement.dataset.theme = 'light'; else delete document.documentElement.dataset.theme;
+      const m = $('#meta-theme'); if (m) m.setAttribute('content', t === 'light' ? '#e9f1eb' : '#0b0f14');
+      const seg = $('.theme-seg');
+      if (seg) {
+        seg.dataset.mode = mode;
+        seg.querySelectorAll('[data-mode]').forEach((b) => b.setAttribute('aria-checked', b.dataset.mode === mode));
+      }
+    },
+    setMode(m) {
+      m = m === 'light' || m === 'auto' ? m : 'dark';
+      try { localStorage.setItem(THEME_KEY, m); } catch (e) { /* ignore */ }
+      Theme.apply();
+      toast('תצוגה: ' + MODE_LABEL[m] + (m === 'auto' ? ` · בהיר מ-${String(LIGHT_FROM).padStart(2, '0')}:00 עד ${LIGHT_TO}:00` : ''));
+    },
+    set(m) { Theme.setMode(m); }                       // backwards compatible alias
   };
+  setInterval(() => { if (Theme.mode() === 'auto') Theme.apply(); }, 30000);   // flips at 07:00 / 17:00 on its own
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) Theme.apply(); });
 
   function renderScenes() {
     const nav = $('#scenes');

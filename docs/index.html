@@ -6,13 +6,13 @@
 <meta name="theme-color" id="meta-theme" content="#0b0f14">
 <meta name="mobile-web-app-capable" content="yes">
 <title>Unica Smart Office</title>
-<script>try{if(localStorage.getItem("unica.theme.v1")==="light")document.documentElement.dataset.theme="light"}catch(e){}</script>
+<script>try{var m=localStorage.getItem("unica.theme.v1"),hr=new Date().getHours();if(m==="light"||(m==="auto"&&hr>=7&&hr<17))document.documentElement.dataset.theme="light"}catch(e){}</script>
 <link rel="icon" href="assets/icon-192.png" type="image/png">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Smart Office">
-<link rel="stylesheet" href="style.css?v=17">
+<link rel="stylesheet" href="style.css?v=19">
 </head>
 <body>
 <div id="splash" aria-hidden="true"><img class="logo-dark" src="assets/logo.svg" alt=""><img class="logo-light" src="assets/logo-light.svg" alt=""></div>
@@ -31,8 +31,8 @@
 <div id="toast" role="status" aria-live="polite"></div>
 
 <!-- app.js must load before radio.js; boot runs on DOMContentLoaded -->
-<script src="app.js?v=17"></script>
-<script src="clock.js?v=17"></script>
-<script src="radio.js?v=17"></script>
+<script src="app.js?v=19"></script>
+<script src="clock.js?v=19"></script>
+<script src="radio.js?v=19"></script>
 </body>
 </html>
